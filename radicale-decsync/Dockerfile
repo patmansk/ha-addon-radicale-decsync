@@ -16,8 +16,8 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     radicale==3.2.3 \
     radicale_storage_decsync==2.1.0
 
-# Radicale data directory
-RUN mkdir -p /data/radicale/collections /config/radicale
+# Radicale data directory (created at runtime in run.sh via /data volume)
+RUN mkdir -p /data/collections
 
 # Copy entrypoint script
 COPY run.sh /
