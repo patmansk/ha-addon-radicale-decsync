@@ -6,6 +6,7 @@ url: "https://github.com/39aldo39/Radicale-DecSync"
 arch:
   - amd64
   - aarch64
+init: false
 startup: "application"
 boot: "auto"
 webui: "http://[HOST]:[PORT:5232]"
