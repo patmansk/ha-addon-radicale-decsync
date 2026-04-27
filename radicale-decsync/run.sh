@@ -1,46 +1,48 @@
-#!/usr/bin/with-contenv bashio
+#!/bin/bash
+set -e
+
 # ==============================================================================
 # Radicale DecSync Add-on for Home Assistant
 # Starts the Radicale CalDAV/CardDAV server with DecSync storage backend
 # ==============================================================================
 
-readonly CONFIG_PATH="/data/options.json"
-readonly RADICALE_CONFIG="/data/radicale.conf"
-readonly RADICALE_DATA="/data/collections"
-readonly HTPASSWD_FILE="/data/htpasswd"
+CONFIG_PATH="/data/options.json"
+RADICALE_CONFIG="/data/radicale.conf"
+RADICALE_DATA="/data/collections"
+HTPASSWD_FILE="/data/htpasswd"
 
-# --- Read add-on options (directly from options.json for reliability) ----------
+log() { echo "[$(date '+%H:%M:%S')] $1"; }
+
+# --- Read add-on options ------------------------------------------------------
 if [ ! -f "${CONFIG_PATH}" ]; then
-    bashio::log.fatal "Options file ${CONFIG_PATH} not found!"
+    log "FATAL: Options file ${CONFIG_PATH} not found!"
     exit 1
 fi
 
-decsync_dir="$(jq --raw-output '.decsync_dir // "/share/decsync"' ${CONFIG_PATH})"
-auth_type="$(jq --raw-output '.auth_type // "none"' ${CONFIG_PATH})"
-log_level="$(jq --raw-output '.log_level // "info"' ${CONFIG_PATH})"
+decsync_dir="$(jq --raw-output '.decsync_dir // "/share/decsync"' "${CONFIG_PATH}")"
+auth_type="$(jq --raw-output '.auth_type // "none"' "${CONFIG_PATH}")"
+log_level="$(jq --raw-output '.log_level // "info"' "${CONFIG_PATH}")"
 
-bashio::log.info "Starting Radicale DecSync add-on..."
-bashio::log.info "  DecSync directory : ${decsync_dir}"
-bashio::log.info "  Auth type         : ${auth_type}"
-bashio::log.info "  Log level         : ${log_level}"
+log "Starting Radicale DecSync add-on..."
+log "  DecSync directory : ${decsync_dir}"
+log "  Auth type         : ${auth_type}"
+log "  Log level         : ${log_level}"
 
 # --- Ensure directories exist ------------------------------------------------
 mkdir -p "${RADICALE_DATA}"
-if ! mkdir -p "${decsync_dir}" 2>/dev/null; then
-    bashio::log.warning "Could not create DecSync directory '${decsync_dir}'"
-fi
+mkdir -p "${decsync_dir}" 2>/dev/null || log "WARNING: Could not create DecSync directory '${decsync_dir}'"
 
 # --- Build htpasswd file if auth_type is htpasswd ----------------------------
 if [ "${auth_type}" = "htpasswd" ]; then
-    bashio::log.info "Configuring htpasswd authentication..."
+    log "Configuring htpasswd authentication..."
     : > "${HTPASSWD_FILE}"
 
-    user_count="$(jq '.users | length' ${CONFIG_PATH})"
+    user_count="$(jq '.users | length' "${CONFIG_PATH}")"
     for i in $(seq 0 $((user_count - 1))); do
-        username="$(jq --raw-output ".users[${i}].username" ${CONFIG_PATH})"
-        password="$(jq --raw-output ".users[${i}].password" ${CONFIG_PATH})"
+        username="$(jq --raw-output ".users[${i}].username" "${CONFIG_PATH}")"
+        password="$(jq --raw-output ".users[${i}].password" "${CONFIG_PATH}")"
         htpasswd -bB "${HTPASSWD_FILE}" "${username}" "${password}"
-        bashio::log.info "  Added user: ${username}"
+        log "  Added user: ${username}"
     done
 fi
 
@@ -78,11 +80,11 @@ level = ${log_level}
 type = owner_only
 CONF
 
-bashio::log.info "Radicale configuration:"
+log "Generated Radicale configuration:"
 while IFS= read -r line; do
-    bashio::log.info "  ${line}"
+    log "  ${line}"
 done < "${RADICALE_CONFIG}"
 
 # --- Start Radicale ----------------------------------------------------------
-bashio::log.info "Launching Radicale server on port 5232..."
+log "Launching Radicale server on port 5232..."
 exec python3 -m radicale --config "${RADICALE_CONFIG}"
