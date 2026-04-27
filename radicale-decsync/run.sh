@@ -77,7 +77,7 @@ decsync_dir = ${decsync_dir}
 level = ${log_level}
 
 [rights]
-type = owner_only
+type = authenticated
 CONF
 
 log "Generated Radicale configuration:"
