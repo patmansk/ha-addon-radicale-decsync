@@ -53,9 +53,9 @@ For better security, switch to `htpasswd` authentication. You define users and p
 ```yaml
 auth_type: htpasswd
 users:
-  - username: patrick
+  - username: alice
     password: mysecretpassword
-  - username: anna
+  - username: bob
     password: herpassword
 ```
 
