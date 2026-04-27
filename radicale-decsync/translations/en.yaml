@@ -1,0 +1,22 @@
+configuration:
+  decsync_dir:
+    name: DecSync Directory
+    description: >-
+      Path to the DecSync directory. This is the directory that is synchronized
+      across your devices (e.g., via Syncthing). Must be under a mapped volume
+      such as /share.
+  auth_type:
+    name: Authentication Type
+    description: >-
+      Authentication method for the Radicale server. "none" accepts any
+      credentials (suitable for local-only access). "htpasswd" requires
+      configured usernames and passwords.
+  users:
+    name: Users
+    description: >-
+      List of users for htpasswd authentication. Each entry needs a username
+      and password. Only used when auth_type is "htpasswd".
+  log_level:
+    name: Log Level
+    description: >-
+      Logging verbosity for the Radicale server.

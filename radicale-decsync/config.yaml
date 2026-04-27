@@ -1,0 +1,32 @@
+name: "Radicale DecSync"
+version: "1.0.0"
+slug: "radicale_decsync"
+description: "CalDAV/CardDAV server (Radicale) with DecSync storage integration for serverless calendar and contact synchronization"
+url: "https://github.com/39aldo39/Radicale-DecSync"
+arch:
+  - amd64
+  - aarch64
+startup: "application"
+boot: "auto"
+webui: "http://[HOST]:[PORT:5232]"
+ports:
+  5232/tcp: 5232
+ports_description:
+  5232/tcp: "Radicale CalDAV/CardDAV server"
+map:
+  - type: share
+    read_only: false
+  - type: ssl
+    read_only: true
+options:
+  decsync_dir: "/share/decsync"
+  auth_type: "none"
+  users: []
+  log_level: "info"
+schema:
+  decsync_dir: str
+  auth_type: "list(none|htpasswd)"
+  users:
+    - username: str
+      password: password
+  log_level: "list(debug|info|warning|error|critical)"
