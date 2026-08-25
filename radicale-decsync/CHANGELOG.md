@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.0.4
+## 1.0.5
 
-- **Fix:** Use `type = everyone` instead of `rights_default = read-write` in the `[rights]` section (Radicale 3.x syntax)
+- **Fix:** Use full Python module paths in the `[rights]` section: `radicale.rights.none` (no auth) and `radicale.rights.authenticated` (htpasswd). Radicale 3.x does not accept short keywords like `everyone` or `authenticated`
 
 ## 1.0.3
 

@@ -81,11 +81,11 @@ CONF
 
 if [ "${auth_type}" = "htpasswd" ]; then
     cat >> "${RADICALE_CONFIG}" <<CONF
-type = authenticated
+type = radicale.rights.authenticated
 CONF
 else
     cat >> "${RADICALE_CONFIG}" <<CONF
-type = everyone
+type = radicale.rights.none
 CONF
 fi
 
