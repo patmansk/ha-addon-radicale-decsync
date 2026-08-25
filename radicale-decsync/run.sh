@@ -85,7 +85,7 @@ type = authenticated
 CONF
 else
     cat >> "${RADICALE_CONFIG}" <<CONF
-rights_default = read-write
+type = everyone
 CONF
 fi
 

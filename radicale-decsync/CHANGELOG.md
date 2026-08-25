@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- **Fix:** Use `type = everyone` instead of `rights_default = read-write` in the `[rights]` section (Radicale 3.x syntax)
+
 ## 1.0.3
 
 - **Security:** htpasswd password is now passed via stdin instead of a CLI argument (no longer visible in `ps aux` or shell history)
