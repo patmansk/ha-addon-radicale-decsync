@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+- **Security:** htpasswd password is now passed via stdin instead of a CLI argument (no longer visible in `ps aux` or shell history)
+- **Fix:** Rights section no longer forces `type = authenticated` when `auth_type` is `none`, so the server works out-of-the-box without authentication
+- **Docs:** Added explanatory comment for the `setuptools<81` pin in the Dockerfile (required by `radicale_storage_decsync` 2.1.0's `pkg_resources` dependency)
+
 ## 1.0.2
 
 - Fix s6-overlay PID 1 error: switch to python:3.12-alpine base image

@@ -41,7 +41,7 @@ if [ "${auth_type}" = "htpasswd" ]; then
     for i in $(seq 0 $((user_count - 1))); do
         username="$(jq --raw-output ".users[${i}].username" "${CONFIG_PATH}")"
         password="$(jq --raw-output ".users[${i}].password" "${CONFIG_PATH}")"
-        htpasswd -bB "${HTPASSWD_FILE}" "${username}" "${password}"
+        htpasswd -iB "${HTPASSWD_FILE}" "${username}" <<< "${password}"
         log "  Added user: ${username}"
     done
 fi
@@ -77,8 +77,17 @@ decsync_dir = ${decsync_dir}
 level = ${log_level}
 
 [rights]
+CONF
+
+if [ "${auth_type}" = "htpasswd" ]; then
+    cat >> "${RADICALE_CONFIG}" <<CONF
 type = authenticated
 CONF
+else
+    cat >> "${RADICALE_CONFIG}" <<CONF
+rights_default = read-write
+CONF
+fi
 
 log "Generated Radicale configuration:"
 while IFS= read -r line; do
