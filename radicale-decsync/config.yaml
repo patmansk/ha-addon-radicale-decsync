@@ -1,5 +1,5 @@
 name: "Radicale DecSync"
-version: "1.0.5"
+version: "1.0.6"
 slug: "radicale_decsync"
 description: "CalDAV/CardDAV server (Radicale) with DecSync storage integration for serverless calendar and contact synchronization"
 url: "https://github.com/39aldo39/Radicale-DecSync"

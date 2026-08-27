@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.6
+
+- **Release:** Bump version to 1.0.6
+- **Fix:** Use full Python module paths for Radicale 3.x rights
+
 ## 1.0.5
 
 - **Fix:** Use full Python module paths in the `[rights]` section: `radicale.rights.none` (no auth) and `radicale.rights.authenticated` (htpasswd). Radicale 3.x does not accept short keywords like `everyone` or `authenticated`
