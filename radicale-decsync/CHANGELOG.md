@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7
+
+- **Fix:** Correct rights module name from `radicale.rights.none` to `radicale.rights.everyone` (module does not exist in Radicale 3.x)
+
 ## 1.0.6
 
 - **Release:** Bump version to 1.0.6

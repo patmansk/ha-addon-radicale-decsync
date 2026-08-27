@@ -85,7 +85,7 @@ type = radicale.rights.authenticated
 CONF
 else
     cat >> "${RADICALE_CONFIG}" <<CONF
-type = radicale.rights.none
+type = radicale.rights.everyone
 CONF
 fi
 
