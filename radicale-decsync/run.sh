@@ -38,51 +38,43 @@ if [ "${auth_type}" = "htpasswd" ]; then
     : > "${HTPASSWD_FILE}"
 
     user_count="$(jq '.users | length' "${CONFIG_PATH}")"
-    for i in $(seq 0 $((user_count - 1))); do
+    i=0
+    while [ "${i}" -lt "${user_count}" ]; do
         username="$(jq --raw-output ".users[${i}].username" "${CONFIG_PATH}")"
         password="$(jq --raw-output ".users[${i}].password" "${CONFIG_PATH}")"
-        htpasswd -iB "${HTPASSWD_FILE}" "${username}" <<< "${password}"
+        printf '%s\n' "${password}" | htpasswd -iB "${HTPASSWD_FILE}" "${username}"
         log "  Added user: ${username}"
+        i=$((i + 1))
     done
 fi
 
 # --- Generate Radicale configuration -----------------------------------------
-cat > "${RADICALE_CONFIG}" <<CONF
-[server]
-hosts = 0.0.0.0:5232
-
-[auth]
-CONF
-
-if [ "${auth_type}" = "htpasswd" ]; then
-    cat >> "${RADICALE_CONFIG}" <<CONF
-type = htpasswd
-htpasswd_filename = ${HTPASSWD_FILE}
-htpasswd_encryption = bcrypt
-CONF
-else
-    cat >> "${RADICALE_CONFIG}" <<CONF
-type = none
-CONF
-fi
-
-cat >> "${RADICALE_CONFIG}" <<CONF
-
-[storage]
-type = radicale_storage_decsync
-filesystem_folder = ${RADICALE_DATA}
-decsync_dir = ${decsync_dir}
-
-[logging]
-level = ${log_level}
-
-if [ "${auth_type}" = "htpasswd" ]; then
-    cat >> "${RADICALE_CONFIG}" <<CONF
-
-[rights]
-type = radicale.rights.authenticated
-CONF
-fi
+{
+    echo '[server]'
+    echo 'hosts = 0.0.0.0:5232'
+    echo ''
+    echo '[auth]'
+    if [ "${auth_type}" = "htpasswd" ]; then
+        echo 'type = htpasswd'
+        echo "htpasswd_filename = ${HTPASSWD_FILE}"
+        echo 'htpasswd_encryption = bcrypt'
+    else
+        echo 'type = none'
+    fi
+    echo ''
+    echo '[storage]'
+    echo 'type = radicale_storage_decsync'
+    echo "filesystem_folder = ${RADICALE_DATA}"
+    echo "decsync_dir = ${decsync_dir}"
+    echo ''
+    echo '[logging]'
+    echo "level = ${log_level}"
+    if [ "${auth_type}" = "htpasswd" ]; then
+        echo ''
+        echo '[rights]'
+        echo 'type = radicale.rights.authenticated'
+    fi
+} > "${RADICALE_CONFIG}"
 
 log "Generated Radicale configuration:"
 while IFS= read -r line; do

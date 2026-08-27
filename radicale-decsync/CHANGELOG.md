@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.9
+
+- **Fix:** Rewrite `run.sh` to be fully POSIX-compatible (HAOS uses `sh`, not `bash`). Replace heredocs in if-blocks with echo, replace `<<<` with printf pipe.
+
 ## 1.0.8
 
 - **Fix:** Remove `[rights]` section entirely when `auth_type=none` (Radicale 3.x has no `radicale.rights.none` or `radicale.rights.everyone` module; omitting the section grants default full access)
