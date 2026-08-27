@@ -76,16 +76,11 @@ decsync_dir = ${decsync_dir}
 [logging]
 level = ${log_level}
 
-[rights]
-CONF
-
 if [ "${auth_type}" = "htpasswd" ]; then
     cat >> "${RADICALE_CONFIG}" <<CONF
+
+[rights]
 type = radicale.rights.authenticated
-CONF
-else
-    cat >> "${RADICALE_CONFIG}" <<CONF
-type = radicale.rights.everyone
 CONF
 fi
 
