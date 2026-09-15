@@ -74,6 +74,11 @@ fi
         echo '[rights]'
         echo 'type = radicale.rights.authenticated'
     fi
+
+    echo ''
+    echo '[sharing]'
+    echo 'calendar = on'
+    echo 'address_book = off'
 } > "${RADICALE_CONFIG}"
 
 log "Generated Radicale configuration:"

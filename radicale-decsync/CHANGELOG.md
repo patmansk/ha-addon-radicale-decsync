@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 1.2.3
+- **Fix:** Added `[sharing]` section to generated Radicale config – stops 404 errors from Web-UI sharing API calls (`/.sharing/v1/all/list`, `/.sharing/v1/all/info`)
+- **Note:** Web-UI rendering quirks (stuck spinner, "Title" entry, broken logout) are upstream Radicale 3.8.0 bugs – not fixable from add-on side
+
 ## 1.2.2
 - **Fix:** Correct `patch_compatibility.py` – no longer reverts `storage.Storage` to `BaseStorage` (multifilesystem.Storage is the correct base in Radicale 3.8.0); instead *reverts* an incorrect prior patch that had changed it to `BaseStorage`
 - **Fix:** `upload()` now correctly returns `(item, old_item)` tuple as required by Radicale 3.6+
