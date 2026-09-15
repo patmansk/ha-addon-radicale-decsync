@@ -24,6 +24,7 @@ RUN pip3 install --no-cache-dir \
     radicale_storage_decsync==2.1.0
 
 # Copy entrypoint script
+COPY patch_compatibility.py /patch_compatibility.py
 COPY run.sh /
 RUN chmod a+x /run.sh
 

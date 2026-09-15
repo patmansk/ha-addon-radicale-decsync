@@ -81,6 +81,12 @@ while IFS= read -r line; do
     log "  ${line}"
 done < "${RADICALE_CONFIG}"
 
+# --- Apply Radicale 3.8.0 compatibility patch (if present) ---------------
+if [ -f /patch_compatibility.py ]; then
+    log "Applying DecSync/Radicale compatibility patch..."
+    python3 /patch_compatibility.py || log "WARNING: Compatibility patch failed (non-fatal)"
+fi
+
 # --- Start Radicale ----------------------------------------------------------
 log "Launching Radicale server on port 5232..."
 exec python3 -m radicale --config "${RADICALE_CONFIG}"
