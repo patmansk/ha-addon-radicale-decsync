@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 1.2.4
+- **Fix:** `[sharing]` config – `calendar`/`address_book` sind keine gültigen Optionen in Radicale 3.8.0; ersetzt durch `enabled = true` (korrigiert CRITICAL-Abort beim Start)
+
 ## 1.2.3
 - **Fix:** Added `[sharing]` section to generated Radicale config – stops 404 errors from Web-UI sharing API calls (`/.sharing/v1/all/list`, `/.sharing/v1/all/info`)
 - **Note:** Web-UI rendering quirks (stuck spinner, "Title" entry, broken logout) are upstream Radicale 3.8.0 bugs – not fixable from add-on side

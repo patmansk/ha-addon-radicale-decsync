@@ -77,8 +77,7 @@ fi
 
     echo ''
     echo '[sharing]'
-    echo 'calendar = on'
-    echo 'address_book = off'
+    echo 'enabled = true'
 } > "${RADICALE_CONFIG}"
 
 log "Generated Radicale configuration:"
