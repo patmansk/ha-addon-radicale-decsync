@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 1.2.6
+- **Fix:** `[sharing]` config – korrekte Optionen `collection_by_token = true` + `permit_create_token = true` (ersetzt frühere invaliden Optionen); Web-UI Sharing-API liefert jetzt 200 statt 404
+- **Cleanup:** Stale `.Radicale.cache`-Ordner wird bei jedem Start entfernt (verhindert Inkompatibilitäten mit älteren Radicale-Versionen)
+
 ## 1.2.5
 - **Fix:** Removed `[sharing]` section entirely – Radicale 3.8.0 does not accept `calendar`, `address_book`, or `enabled` as valid options in this section (caused CRITICAL abort at startup)
 - **Note:** Web-UI sharing-API 404s (`/.sharing/v1/all/list`) are cosmetic and do not affect CalDAV/CardDAV sync

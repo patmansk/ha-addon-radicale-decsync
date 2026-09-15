@@ -75,6 +75,10 @@ fi
         echo 'type = radicale.rights.authenticated'
     fi
 
+    echo ''
+    echo '[sharing]'
+    echo 'collection_by_token = true'
+    echo 'permit_create_token = true'
 } > "${RADICALE_CONFIG}"
 
 log "Generated Radicale configuration:"
@@ -86,6 +90,13 @@ done < "${RADICALE_CONFIG}"
 if [ -f /patch_compatibility.py ]; then
     log "Applying DecSync/Radicale compatibility patch..."
     python3 /patch_compatibility.py || log "WARNING: Compatibility patch failed (non-fatal)"
+fi
+
+# --- Clean stale storage cache (from older Radicale versions) ---------------
+CACHE_DIR="${RADICALE_DATA}/.Radicale.cache"
+if [ -d "${CACHE_DIR}" ]; then
+    log "Cleaning stale storage cache: ${CACHE_DIR}"
+    rm -rf "${CACHE_DIR}"
 fi
 
 # --- Start Radicale ----------------------------------------------------------
