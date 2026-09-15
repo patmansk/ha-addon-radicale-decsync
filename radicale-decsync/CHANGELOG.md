@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 1.2.7
+- **Fix:** `[sharing]` – fehlte `type = radicale.sharing.token`; ohne diesen Wert defaultet Radicale 3.8.0 auf `radicale.sharing.none` und deaktiviert die gesamte Sharing-API trotz korrekt gesetzter Sub-Options
+
 ## 1.2.6
 - **Fix:** `[sharing]` config – korrekte Optionen `collection_by_token = true` + `permit_create_token = true` (ersetzt frühere invaliden Optionen); Web-UI Sharing-API liefert jetzt 200 statt 404
 - **Cleanup:** Stale `.Radicale.cache`-Ordner wird bei jedem Start entfernt (verhindert Inkompatibilitäten mit älteren Radicale-Versionen)
