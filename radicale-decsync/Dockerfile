@@ -14,11 +14,13 @@ RUN apk add --no-cache \
 # relies on the legacy `pkg_resources` entry-point mechanism, which was
 # removed in setuptools 81+.  Bump this pin only after the plugin drops
 # its pkg_resources dependency.
+# NOTE: Radicale >= 3.6.0 replaced the stale `passlib` dependency with
+# `libpass >= 1.9.3` for htpasswd bcrypt hashing.
 RUN pip3 install --no-cache-dir \
     "setuptools<81" \
-    radicale==3.2.3 \
+    radicale==3.8.0 \
     bcrypt \
-    passlib \
+    "libpass>=1.9.3" \
     radicale_storage_decsync==2.1.0
 
 # Copy entrypoint script
