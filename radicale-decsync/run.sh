@@ -75,9 +75,6 @@ fi
         echo 'type = radicale.rights.authenticated'
     fi
 
-    echo ''
-    echo '[sharing]'
-    echo 'enabled = true'
 } > "${RADICALE_CONFIG}"
 
 log "Generated Radicale configuration:"

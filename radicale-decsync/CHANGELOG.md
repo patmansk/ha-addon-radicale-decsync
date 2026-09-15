@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 1.2.5
+- **Fix:** Removed `[sharing]` section entirely – Radicale 3.8.0 does not accept `calendar`, `address_book`, or `enabled` as valid options in this section (caused CRITICAL abort at startup)
+- **Note:** Web-UI sharing-API 404s (`/.sharing/v1/all/list`) are cosmetic and do not affect CalDAV/CardDAV sync
+
 ## 1.2.4
 - **Fix:** `[sharing]` config – `calendar`/`address_book` sind keine gültigen Optionen in Radicale 3.8.0; ersetzt durch `enabled = true` (korrigiert CRITICAL-Abort beim Start)
 
