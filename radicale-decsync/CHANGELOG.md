@@ -1,6 +1,12 @@
 # Changelog
 
 
+## 1.2.2
+- **Fix:** Correct `patch_compatibility.py` – no longer reverts `storage.Storage` to `BaseStorage` (multifilesystem.Storage is the correct base in Radicale 3.8.0); instead *reverts* an incorrect prior patch that had changed it to `BaseStorage`
+- **Fix:** `upload()` now correctly returns `(item, old_item)` tuple as required by Radicale 3.6+
+- **Note:** All other patches (discover signature, pkg_resources shim) already applied in 1.2.1
+
+
 ## 1.2.1
 
 - **Fix:** `class Storage(storage.Storage)` → `class Storage(BaseStorage)` – multifilesystem in Radicale 3.8.0 no longer exposes a `Storage` attribute

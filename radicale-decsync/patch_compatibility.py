@@ -7,11 +7,11 @@ Fixes:
   1. BaseStorage.discover() gained a 'user_groups' parameter (Radicale 3.6+).
   2. BaseCollection.upload() now returns Tuple[Item, Optional[Item]]
      instead of a bare Item (Radicale 3.6+).
-  3. class Storage(storage.Storage) – multifilesystem no longer exposes
-     a 'Storage' attribute in Radicale 3.8.0; must inherit from
-     radicale.storage.BaseStorage directly.
-  4. libdecsync uses pkg_resources.resource_filename – replaced with
+  3. libdecsync uses pkg_resources.resource_filename - replaced with
      importlib.resources shim (safety net for Python 3.13 / setuptools>=81).
+
+NOTE: class Storage(storage.Storage) is CORRECT - multifilesystem.Storage
+      exists in Radicale 3.8.0 and provides all needed implementations.
 """
 import os
 import glob
@@ -28,8 +28,10 @@ def patch_decsync_plugin(filepath):
     if old_tail in content:
         content = content.replace(old_tail, new_tail)
         print("  [PATCHED] discover() signature: +user_groups=None")
+    elif new_tail in content:
+        print("  [SKIP]    discover() signature: already patched")
     else:
-        print("  [SKIP]  discover() signature: pattern not found (already patched?)")
+        print("  [WARN]    discover() signature: pattern not found")
 
     # --- 2) Forward user_groups to super().discover() ---
     old_call = "super().discover(path, depth, child_context_manager)"
@@ -37,8 +39,10 @@ def patch_decsync_plugin(filepath):
     if old_call in content:
         content = content.replace(old_call, new_call)
         print("  [PATCHED] super().discover(): forwards user_groups")
+    elif new_call in content:
+        print("  [SKIP]    super().discover() call: already patched")
     else:
-        print("  [SKIP]  super().discover() call: pattern not found")
+        print("  [WARN]    super().discover() call: pattern not found")
 
     # --- 3) Fix upload(): unpack Tuple[Item, Optional[Item]] return ---
     old_upload = "        item = super().upload(href, orig_item)"
@@ -46,8 +50,10 @@ def patch_decsync_plugin(filepath):
     if old_upload in content:
         content = content.replace(old_upload, new_upload)
         print("  [PATCHED] upload(): unpack Tuple return value")
+    elif new_upload in content:
+        print("  [SKIP]    upload() unpack: already patched")
     else:
-        print("  [SKIP]  upload() unpack: pattern not found (already patched?)")
+        print("  [WARN]    upload() unpack: pattern not found")
 
     # --- 4) Fix upload(): return Tuple instead of bare Item ---
     old_ret = '            self.decsync.set_entry(["resources", item.uid], None, item.serialize())\n        return item'
@@ -55,44 +61,27 @@ def patch_decsync_plugin(filepath):
     if old_ret in content:
         content = content.replace(old_ret, new_ret)
         print("  [PATCHED] upload(): return item, old_item (Tuple)")
+    elif new_ret in content:
+        print("  [SKIP]    upload() return: already patched")
     else:
-        print("  [SKIP]  upload() return: pattern not found (already patched?)")
+        print("  [WARN]    upload() return: pattern not found")
 
-    # --- 5) Fix class base: storage.Storage -> BaseStorage (Radicale 3.8.0) ---
-    # Add explicit BaseStorage import if not present
-    if "from radicale.storage import BaseStorage" not in content:
-        old_import = "import radicale.storage.multifilesystem as storage"
-        new_import = "import radicale.storage.multifilesystem as storage\nfrom radicale.storage import BaseStorage"
-        if old_import in content:
-            content = content.replace(old_import, new_import)
-            print("  [PATCHED] Added 'from radicale.storage import BaseStorage' import")
-        else:
-            # Try to insert after any radicale import
-            for alt in ["from radicale import pathutils", "from radicale import item as radicale_item"]:
-                if alt in content:
-                    content = content.replace(alt, alt + "\nfrom radicale.storage import BaseStorage")
-                    print("  [PATCHED] Added BaseStorage import (alt anchor)")
-                    break
-            else:
-                print("  [WARN]  Could not find anchor for BaseStorage import")
-
-    # Change the class declaration
-    old_class = "class Storage(storage.Storage):"
-    new_class = "class Storage(BaseStorage):"
-    if old_class in content:
-        content = content.replace(old_class, new_class)
-        print("  [PATCHED] class Storage(storage.Storage) -> class Storage(BaseStorage)")
-    elif "class Storage(BaseStorage):" in content:
-        print("  [SKIP]  class Storage: already patched")
+    # --- 5) FIX: Revert incorrect BaseStorage patch (if previously applied) ---
+    if "class Storage(BaseStorage):" in content:
+        content = content.replace("class Storage(BaseStorage):", "class Storage(storage.Storage):")
+        content = content.replace("\nfrom radicale.storage import BaseStorage", "")
+        print("  [FIXED]   Reverted class Storage(BaseStorage) -> class Storage(storage.Storage)")
+    elif "class Storage(storage.Storage):" in content:
+        print("  [OK]      class Storage(storage.Storage): correct")
     else:
-        print("  [WARN]  class Storage line not found – check manually")
+        print("  [WARN]    class Storage line not found - check manually")
 
     with open(filepath, "w") as f:
         f.write(content)
 
 
 def patch_libdecsync(filepath):
-    """Patch libdecsync/__init__.py – replace pkg_resources with importlib.resources"""
+    """Patch libdecsync/__init__.py - replace pkg_resources with importlib.resources"""
     with open(filepath, "r") as f:
         content = f.read()
 
@@ -108,7 +97,7 @@ def patch_libdecsync(filepath):
         with open(filepath, "w") as f:
             f.write(content)
     else:
-        print("  [SKIP]  libdecsync: pkg_resources not found (already patched or not needed)")
+        print("  [SKIP]    libdecsync: pkg_resources not found (already patched or not needed)")
 
 
 def find_in_site_packages(module_name):
@@ -136,23 +125,20 @@ def main():
     print("=== Radicale DecSync Compatibility Patch ===")
     print()
 
-    # --- Patch the DecSync plugin ---
     fp = find_in_site_packages("radicale_storage_decsync")
     if fp is None:
-        print("[FAIL] radicale_storage_decsync not found – cannot patch.")
+        print("[FAIL] radicale_storage_decsync not found - cannot patch.")
         return 1
     print(f"[1/2] Patching: {fp}")
     patch_decsync_plugin(fp)
 
-    # --- Patch libdecsync (safety net) ---
     fp2 = find_in_site_packages("libdecsync")
     if fp2 is None:
-        print("[SKIP]  libdecsync not found – skipping.")
+        print("[SKIP]  libdecsync not found - skipping.")
     else:
         print(f"[2/2] Patching: {fp2}")
         patch_libdecsync(fp2)
 
-    # --- Verify ---
     print()
     try:
         import py_compile
@@ -164,13 +150,13 @@ def main():
         print(f"[FAIL] Compile check: {e}")
         return 1
 
-    # --- Smoke-test import ---
     print()
     try:
         import radicale_storage_decsync
         print(f"[OK]  Import successful!")
         print(f"      Storage:    {radicale_storage_decsync.Storage}")
-        print(f"      Collection: {radicale_storage_decsync.Collection}")
+        for cls in radicale_storage_decsync.Storage.__mro__:
+            print(f"        - {cls.__module__}.{cls.__name__}")
     except Exception as e:
         print(f"[FAIL] Import test: {type(e).__name__}: {e}")
         import traceback
@@ -178,7 +164,7 @@ def main():
         return 1
 
     print()
-    print("=== Patch complete – all checks passed. ===")
+    print("=== Patch complete - all checks passed. ===")
     return 0
 
 
