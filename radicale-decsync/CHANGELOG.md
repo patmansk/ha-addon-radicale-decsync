@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 1.2.9
+- **Fix:** [sharing] type = csv – ohne DB-Backend (Default none) liefert die Sharing-API 404
+
 ## 1.2.8
 - **Fix:** `[sharing]` – `type`-Feld entfernt; Radicale 3.8 hat für Sharing kein Pluggable-Modul (im Gegensatz zu auth/group/rights); Sharing wird ausschließlich über Sub-Options aktiviert (`collection_by_token`, `permit_create_token`)
 
