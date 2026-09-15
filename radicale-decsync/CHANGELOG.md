@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- **Upgrade:** Radicale 3.2.3 → 3.8.0 (new features: sharing-by-group/realm, O(n²) PROPFIND fix, improved bcrypt handling, multiple bug fixes)
+- **Fix:** Replace deprecated `passlib` with `libpass >= 1.9.3` (required by Radicale ≥ 3.6.0)
+- **Note:** `radicale_storage_decsync` remains at 2.1.0 (no newer release available; plugin API unchanged in Radicale 3.8.0)
+
 ## 1.0.9
 
 - **Fix:** Rewrite `run.sh` to be fully POSIX-compatible (HAOS uses `sh`, not `bash`). Replace heredocs in if-blocks with echo, replace `<<<` with printf pipe.
