@@ -1,5 +1,13 @@
 # Changelog
 
+
+## 1.2.1
+
+- **Fix:** `class Storage(storage.Storage)` → `class Storage(BaseStorage)` – multifilesystem in Radicale 3.8.0 no longer exposes a `Storage` attribute
+- **Fix:** `libdecsync` `pkg_resources.resource_filename` → `importlib.resources.files` shim (Python 3.13 / setuptools ≥ 81 safety net)
+- **Fix:** `discover()` signature + `upload()` Tuple return (Radicale 3.6+ API changes)
+- **Note:** Reverted unnecessary `get_uid`/`get_href` patches – plugin defines its own via `CollectionHrefMappingsMixin`
+
 ## 1.1.0
 
 - **Upgrade:** Radicale 3.2.3 → 3.8.0 (new features: sharing-by-group/realm, O(n²) PROPFIND fix, improved bcrypt handling, multiple bug fixes)
