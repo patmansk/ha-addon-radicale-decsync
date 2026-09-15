@@ -77,7 +77,6 @@ fi
 
     echo ''
     echo '[sharing]'
-    echo 'type = radicale.sharing.token'
     echo 'collection_by_token = true'
     echo 'permit_create_token = true'
 } > "${RADICALE_CONFIG}"

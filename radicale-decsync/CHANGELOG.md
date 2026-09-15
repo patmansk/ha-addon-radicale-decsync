@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 1.2.8
+- **Fix:** `[sharing]` – `type`-Feld entfernt; Radicale 3.8 hat für Sharing kein Pluggable-Modul (im Gegensatz zu auth/group/rights); Sharing wird ausschließlich über Sub-Options aktiviert (`collection_by_token`, `permit_create_token`)
+
 ## 1.2.7
 - **Fix:** `[sharing]` – fehlte `type = radicale.sharing.token`; ohne diesen Wert defaultet Radicale 3.8.0 auf `radicale.sharing.none` und deaktiviert die gesamte Sharing-API trotz korrekt gesetzter Sub-Options
 
