@@ -134,7 +134,7 @@ This structure is created automatically by DecSync-compatible apps like [DecSync
 
 ## Components
 
-- [Radicale](https://radicale.org) v3.2.3 — CalDAV/CardDAV server
+- [Radicale](https://radicale.org) v3.8.0 — CalDAV/CardDAV server
 - [radicale_storage_decsync](https://github.com/39aldo39/Radicale-DecSync) v2.1.0 — DecSync storage plugin
 - [libdecsync](https://github.com/39aldo39/libdecsync) — DecSync native library
 
