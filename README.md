@@ -133,27 +133,6 @@ This structure is created automatically by DecSync-compatible apps like [DecSync
 | Changes not syncing to other devices | Verify Syncthing is running and the DecSync directory is actively syncing. |
 
 
-## Changelog
-
-### v1.2.12 (current)
-
-- **Fix:** vCard 4.0 support – Radicale 3.8.0's `vobject_supports_vcard4()` checked `major >= 1`, but vobject never reached 1.0.0 (latest: 0.9.9). PROPFIND now correctly advertises `version="4.0"` for `supported-address-data`, so CardDAV clients accept vCard 4.0 contacts.
-- Patch is applied at container start via `patch_compatibility.py` (idempotent, non-fatal on failure).
-
-### v1.2.11
-
-- **Feature:** Map-based sharing (`collection_by_map`, `permit_create_map`, `database_path`) for bday-calendar support.
-
-### v1.2.10
-
-- **Fix:** Radicale 3.8.0 API compatibility (`discover()` signature, `upload()` return type, `create_collection()` 3-tuple).
-- **Fix:** `libdecsync` `pkg_resources` → `importlib.resources` shim for Python 3.13 / setuptools >= 81.
-- **Fix:** `check_and_sanitize_items()` `max_vevent_rrule_occurrence` requirement.
-- **Fix:** `resources_listener()` per-entry try/except to prevent single malformed entry from aborting collection import.
-
-### v1.2.9
-
-- **Fix:** Initial compatibility patches for `radicale_storage_decsync` 2.1.0 with Radicale 3.6+.
 
 ## Components
 
