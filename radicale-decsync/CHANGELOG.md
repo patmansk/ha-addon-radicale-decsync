@@ -1,6 +1,17 @@
 # Changelog
 
 
+## 1.2.10
+
+
+- **Fix (Radicale 3.8.0):** `discover()` – neue `user_groups`-Signatur unterstützt
+- **Fix (Radicale 3.8.0):** `upload()` – Return-Wert `Tuple[Item, Optional[Item]]` korrekt entpackt
+- **Fix (Radicale 3.8.0):** `check_and_sanitize_items()` – `max_vevent_rrule_occurrence=10000` ergänzt
+- **Fix (Radicale 3.8.0):** `create_collection()` – 3-tuple Return-Wert per `[0]` entpackt
+- **Fix (Radicale 3.8.0):** `resources_listener()` – `try/except` pro Eintrag, ein kaputter Eintrag bricht Sync nicht mehr ab
+- **Fix (libdecsync):** `pkg_resources` → `importlib.resources` Shim (Python 3.12+)
+- **Fix:** Add-on-Version in `config.yaml` auf 1.2.10 gesetzt
+
 ## 1.2.9
 - **Fix:** [sharing] type = csv – ohne DB-Backend (Default none) liefert die Sharing-API 404
 
