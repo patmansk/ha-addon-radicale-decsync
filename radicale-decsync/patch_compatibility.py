@@ -233,9 +233,89 @@ def find_in_site_packages(module_name):
     return None
 
 
+def patch_radicale_utils(filepath):
+    """Patch radicale/utils.py: fix vobject_supports_vcard4() version check.
+
+    Radicale 3.8.0 checks major >= 1, but vobject never reached 1.0.0 on PyPI
+    (latest is 0.9.9). vobject >= 0.9.6 supports vCard 4.0. Without this fix,
+    PROPFIND responses only advertise version="3.0" for supported-address-data,
+    causing CardDAV clients to reject vCard 4.0 contacts.
+    """
+    if filepath is None or not os.path.isfile(filepath):
+        print("  [SKIP]    radicale/utils.py not found")
+        return
+
+    with open(filepath, "r") as f:
+        content = f.read()
+
+    old_func = (
+        "def vobject_supports_vcard4() -> bool:\n"
+        '    """Check if vobject supports vCard 4.0 (requires version >= 1.0.0)."""\n'
+        "    try:\n"
+        '        version = package_version("vobject")\n'
+        '        parts = version.split(".")\n'
+        "        major = int(parts[0])\n"
+        "        return major >= 1\n"
+        "    except Exception:\n"
+        "        return False"
+    )
+
+    new_func = (
+        "def vobject_supports_vcard4() -> bool:\n"
+        '    """Check if vobject supports vCard 4.0 (requires version >= 0.9.6)."""\n'
+        "    try:\n"
+        '        version = package_version("vobject")\n'
+        '        parts = [int(x) for x in version.split(".")[:3]]\n'
+        "        while len(parts) < 3:\n"
+        "            parts.append(0)\n"
+        "        return parts >= [0, 9, 6]\n"
+        "    except Exception:\n"
+        "        return False"
+    )
+
+    if new_func in content:
+        print("  [SKIP]    vobject_supports_vcard4(): already patched")
+    elif old_func in content:
+        content = content.replace(old_func, new_func)
+        print("  [PATCHED] vobject_supports_vcard4(): major>=1 -> parts>=[0,9,6]")
+    else:
+        print("  [WARN]    vobject_supports_vcard4(): pattern not found (check manually)")
+
+    with open(filepath, "w") as f:
+        f.write(content)
+
+
+def find_radicale_utils():
+    """Find radicale/utils.py in site-packages."""
+    patterns = [
+        os.path.expanduser("~/.local/lib/python*/site-packages/radicale/utils.py"),
+        "/usr/local/lib/python*/site-packages/radicale/utils.py",
+        "/usr/lib/python*/site-packages/radicale/utils.py",
+    ]
+    for pat in patterns:
+        for fp in glob.glob(pat):
+            if os.path.isfile(fp):
+                return fp
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec("radicale.utils")
+        if spec and spec.origin:
+            return spec.origin
+    except Exception:
+        pass
+    return None
+
+
 def main():
     print("=== Radicale DecSync Compatibility Patch ===")
     print()
+
+    # --- 0) Patch radicale/utils.py vcard4 check ---
+    fp_utils = find_radicale_utils()
+    if fp_utils:
+        print(f"[0] Patching radicale/utils.py (vcard4 fix)")
+        patch_radicale_utils(fp_utils)
+        print()
 
     fp = find_in_site_packages("radicale_storage_decsync")
     if fp is None:
