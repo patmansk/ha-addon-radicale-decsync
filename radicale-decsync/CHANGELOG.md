@@ -1,6 +1,9 @@
 # Changelog
 
 
+## 1.2.11
+- **Feature:** `[sharing]` – `collection_by_map = true` + `permit_create_map = true` + `database_path` ergaenzt; aktiviert map-basiertes Sharing (u. a. fuer den eingebauten Geburtstagskalender / Conversion=bday in Radicale 3.8)
+
 ## 1.2.10
 
 

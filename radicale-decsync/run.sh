@@ -80,6 +80,9 @@ fi
     echo 'type = csv'
     echo 'collection_by_token = true'
     echo 'permit_create_token = true'
+    echo 'collection_by_map = true'
+    echo 'permit_create_map = true'
+    echo "database_path = ${RADICALE_DATA}/collection-db/sharing.csv"
 } > "${RADICALE_CONFIG}"
 
 log "Generated Radicale configuration:"
