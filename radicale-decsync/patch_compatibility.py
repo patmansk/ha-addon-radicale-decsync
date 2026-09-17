@@ -9,9 +9,17 @@ Fixes:
      instead of a bare Item (Radicale 3.6+).
   3. libdecsync uses pkg_resources.resource_filename - replaced with
      importlib.resources shim (safety net for Python 3.13 / setuptools>=81).
+  4. check_and_sanitize_items() requires max_vevent_rrule_occurrence (Radicale 3.8.0).
+  5. Storage.create_collection() now returns a 3-tuple
+     (collection, replaced_items, new_item_hrefs) (Radicale 3.8.0).
+  6. resources_listener() wraps per-entry processing in try/except so a
+     single malformed vCard/VEVENT does not abort the entire collection import.
 
 NOTE: class Storage(storage.Storage) is CORRECT - multifilesystem.Storage
       exists in Radicale 3.8.0 and provides all needed implementations.
+NOTE: The passthrough call `return super().create_collection(href, items, props)`
+      in Storage.create_collection() is intentionally NOT patched - it must
+      forward the 3-tuple to the Radicale core.
 """
 import os
 import glob
@@ -58,11 +66,11 @@ def patch_decsync_plugin(filepath):
     # --- 4) Fix upload(): return Tuple instead of bare Item ---
     old_ret = '            self.decsync.set_entry(["resources", item.uid], None, item.serialize())\n        return item'
     new_ret = '            self.decsync.set_entry(["resources", item.uid], None, item.serialize())\n        return item, old_item'
-    if old_ret in content:
+    if new_ret in content:
+        print("  [SKIP]    upload() return: already patched")
+    elif old_ret in content:
         content = content.replace(old_ret, new_ret)
         print("  [PATCHED] upload(): return item, old_item (Tuple)")
-    elif new_ret in content:
-        print("  [SKIP]    upload() return: already patched")
     else:
         print("  [WARN]    upload() return: pattern not found")
 
@@ -75,6 +83,110 @@ def patch_decsync_plugin(filepath):
         print("  [OK]      class Storage(storage.Storage): correct")
     else:
         print("  [WARN]    class Storage line not found - check manually")
+
+    # --- 6) Add logging import and logger (for Bug 3 error handling) ---
+    if "import logging" not in content:
+        content = content.replace("import vobject\n", "import vobject\nimport logging\n", 1)
+        content = content.replace(
+            "from libdecsync import Decsync\n",
+            "from libdecsync import Decsync\n\n_logger = logging.getLogger(\"radicale_storage_decsync\")\n",
+            1,
+        )
+        print("  [PATCHED] Added logging import + module logger")
+    else:
+        print("  [SKIP]    logging import: already present")
+
+    # --- 7) BUG 1: check_and_sanitize_items() requires max_vevent_rrule_occurrence ---
+    old_sanitize = "radicale_item.check_and_sanitize_items([vobject_item], tag=tag)"
+    new_sanitize = "radicale_item.check_and_sanitize_items([vobject_item], tag=tag, max_vevent_rrule_occurrence=10000)"
+    if old_sanitize in content:
+        content = content.replace(old_sanitize, new_sanitize)
+        print("  [PATCHED] check_and_sanitize_items(): +max_vevent_rrule_occurrence=10000")
+    elif new_sanitize in content:
+        print("  [SKIP]    check_and_sanitize_items(): already patched")
+    else:
+        print("  [WARN]    check_and_sanitize_items(): pattern not found")
+
+    # --- 8) BUG 2A: discover() create_collection() now returns 3-tuple ---
+    old_disc_create = "child = super().create_collection(child_path, props=props)"
+    new_disc_create = "child = super().create_collection(child_path, props=props)[0]"
+    if new_disc_create in content:
+        print("  [SKIP]    discover(): create_collection() already unpacked")
+    elif old_disc_create in content:
+        content = content.replace(old_disc_create, new_disc_create)
+        print("  [PATCHED] discover(): create_collection() -> [0] (unpack 3-tuple)")
+    else:
+        print("  [WARN]    discover(): create_collection() pattern not found")
+
+    # --- 9) BUG 2B: create_collection() create_collection() now returns 3-tuple ---
+    old_cc_create = "col = super().create_collection(path, None, props)"
+    new_cc_create = "col = super().create_collection(path, None, props)[0]"
+    if new_cc_create in content:
+        print("  [SKIP]    create_collection(): already unpacked")
+    elif old_cc_create in content:
+        content = content.replace(old_cc_create, new_cc_create)
+        print("  [PATCHED] create_collection(): super().create_collection(...) -> [0]")
+    else:
+        print("  [WARN]    create_collection(): pattern not found")
+
+    # --- 10) BUG 3: Wrap resources_listener body in try/except ---
+    old_listener_body = (
+        "                uid = path[0]\n"
+        "                href = extra.get_href(uid)\n"
+        "                if value is None:\n"
+        "                    if extra._get(href) is not None:\n"
+        "                        extra.delete(href, update_decsync=False)\n"
+        "                else:\n"
+        "                    vobject_item = vobject.readOne(value)\n"
+        "                    if sync_type == \"contacts\":\n"
+        "                        tag = \"VADDRESSBOOK\"\n"
+        "                    else:\n"
+        "                        tag = \"VCALENDAR\"\n"
+        "                    radicale_item.check_and_sanitize_items([vobject_item], tag=tag, max_vevent_rrule_occurrence=10000)\n"
+        "                    item = radicale_item.Item(collection=extra, vobject_item=vobject_item, uid=uid)\n"
+        "                    item.prepare()\n"
+        "                    extra.upload(href, item, update_decsync=False)"
+    )
+    new_listener_body = (
+        "                try:\n"
+        "                    uid = path[0]\n"
+        "                    href = extra.get_href(uid)\n"
+        "                    if value is None:\n"
+        "                        if extra._get(href) is not None:\n"
+        "                            extra.delete(href, update_decsync=False)\n"
+        "                    else:\n"
+        "                        vobject_item = vobject.readOne(value)\n"
+        "                        if sync_type == \"contacts\":\n"
+        "                            tag = \"VADDRESSBOOK\"\n"
+        "                        else:\n"
+        "                            tag = \"VCALENDAR\"\n"
+        "                        radicale_item.check_and_sanitize_items([vobject_item], tag=tag, max_vevent_rrule_occurrence=10000)\n"
+        "                        item = radicale_item.Item(collection=extra, vobject_item=vobject_item, uid=uid)\n"
+        "                        item.prepare()\n"
+        "                        extra.upload(href, item, update_decsync=False)\n"
+        "                except Exception as e:\n"
+        "                    _logger.warning(\"DecSync: failed to process entry %%s: %%s\", path, e, exc_info=True)"
+    )
+    if old_listener_body in content:
+        content = content.replace(old_listener_body, new_listener_body)
+        print("  [PATCHED] resources_listener(): wrapped in try/except")
+    elif new_listener_body in content:
+        print("  [SKIP]    resources_listener(): already wrapped")
+    else:
+        # Fallback: try matching without the max_vevent_rrule_occurrence (in case patch 7 didn't apply)
+        old_listener_body_v2 = old_listener_body.replace(
+            "radicale_item.check_and_sanitize_items([vobject_item], tag=tag, max_vevent_rrule_occurrence=10000)",
+            "radicale_item.check_and_sanitize_items([vobject_item], tag=tag)"
+        )
+        new_listener_body_v2 = new_listener_body.replace(
+            "radicale_item.check_and_sanitize_items([vobject_item], tag=tag, max_vevent_rrule_occurrence=10000)",
+            "radicale_item.check_and_sanitize_items([vobject_item], tag=tag, max_vevent_rrule_occurrence=10000)"
+        )
+        if old_listener_body_v2 in content:
+            content = content.replace(old_listener_body_v2, new_listener_body_v2)
+            print("  [PATCHED] resources_listener(): wrapped in try/except (variant B)")
+        else:
+            print("  [WARN]    resources_listener(): body pattern not found (check manually)")
 
     with open(filepath, "w") as f:
         f.write(content)
